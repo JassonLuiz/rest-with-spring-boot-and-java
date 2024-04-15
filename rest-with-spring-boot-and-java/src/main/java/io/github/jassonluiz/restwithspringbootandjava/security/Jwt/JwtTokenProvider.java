@@ -95,10 +95,14 @@ public class JwtTokenProvider {
 	}
 
 	private DecodedJWT decodedToken(String token) {
-		Algorithm alg = Algorithm.HMAC256(secretKey.getBytes());
-		JWTVerifier verifier = JWT.require(alg).build();
-		DecodedJWT decodedJWT = verifier.verify(token);
-		return decodedJWT;
+		try {
+			Algorithm alg = Algorithm.HMAC256(secretKey.getBytes());
+			JWTVerifier verifier = JWT.require(alg).build();
+			DecodedJWT decodedJWT = verifier.verify(token);
+			return decodedJWT;
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 	
 	public String resolveToken(HttpServletRequest req) {

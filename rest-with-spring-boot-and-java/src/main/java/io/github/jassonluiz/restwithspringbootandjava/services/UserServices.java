@@ -27,6 +27,7 @@ public class UserServices implements UserDetailsService {
 		logger.info("Finding one user by name!");
 		var user = repository.findByUserName(username);
 		if (user != null) {
+			logger.info(user.getUsername() + " " + user.getPassword());
 			return user;
 		} else {
 			throw new UsernameNotFoundException("Username" + username + "not found!");

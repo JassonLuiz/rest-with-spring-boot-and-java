@@ -3,10 +3,14 @@ package io.github.jassonluiz.restwithspringbootandjava.services;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import io.github.jassonluiz.restwithspringbootandjava.controllers.BookController;
@@ -24,20 +28,36 @@ public class BookService {
 
 	@Autowired
 	BookRepository repository;
-
-	public List<BookVO> findAll() {
+	
+	@Autowired
+	PagedResourcesAssembler<BookVO> assembler;
+	
+	public PagedModel<EntityModel<BookVO>> findAll(Pageable pageable) {
 		logger.info("Finding all books!");
-
-		var books = DozerMapper.parseListObjects(repository.findAll(), BookVO.class);
-		books.stream().forEach(b -> {
-			try {
-				b.add(linkTo(methodOn(BookController.class).findById(b.getKey())).withSelfRel());
-			} catch (Exception e) {
-				logger.info(e.getMessage());
-				e.printStackTrace();
-			}
-		});
-		return books;
+		
+		var bookPage = repository.findAll(pageable);
+		
+		var bookVosPage = bookPage.map(b -> DozerMapper.parseObject(b, BookVO.class));
+		bookVosPage
+			.forEach(
+					b ->{
+						try {
+							b.add(
+									linkTo(methodOn(BookController.class)
+											.findById(b.getKey())).withSelfRel());
+						} catch (Exception e) {
+							logger.info(e.getMessage());
+							e.printStackTrace();
+						}
+					});
+		
+		Link link = linkTo(
+				methodOn(BookController.class)
+					.findall(pageable.getPageNumber(), 
+							pageable.getPageSize(),
+							"asc")).withSelfRel();
+		
+		return assembler.toModel(bookVosPage, link);
 	}
 
 	public BookVO findById(Long id) {

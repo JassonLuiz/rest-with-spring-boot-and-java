@@ -1,5 +1,7 @@
 package io.github.jassonluiz.restwithspringbootandjava.services;
 
+import java.util.logging.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +17,8 @@ import io.github.jassonluiz.restwithspringbootandjava.security.Jwt.JwtTokenProvi
 
 @Service
 public class AuthServices {
+	
+	private Logger logger = Logger.getLogger(AuthServices.class.getName());
 
 	@Autowired
 	private JwtTokenProvider tokenProvider;
@@ -28,18 +32,25 @@ public class AuthServices {
 	@SuppressWarnings("rawtypes")
 	public ResponseEntity signin(AccountCredentialsVO data) {
 		try {
+			
+			logger.info("Entrando no método signin da service...");
+			
 			var username = data.getUsername();
 			var password = data.getPassword();
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
+			logger.info("Entrando no método findByUserName do repository...");
 			var user = repository.findByUserName(username);
 
 			var tokenResponse = new TokenVO();
 			if (user != null) {
+				logger.info("Criando o token response.");
 				tokenResponse = tokenProvider.createAccessToken(username, user.getRoles());
 			} else {
 				throw new UsernameNotFoundException("Username " + username + " not found!");
 			}
+			
+			logger.info("Método signin da service concluido.");
 			return ResponseEntity.ok(tokenResponse);
 		} catch (Exception e) {
 			throw new BadCredentialsException("Invalid username/password supplied!");

@@ -19,7 +19,7 @@ import io.github.jassonluiz.restwithspringbootandjava.exceptions.ResourceNotFoun
 @ControllerAdvice
 @RestController
 public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler{
-
+	
 	@ExceptionHandler(Exception.class)
 	public final ResponseEntity<ExceptionResponse> handleAllExceptions(
 			Exception ex, WebRequest request){

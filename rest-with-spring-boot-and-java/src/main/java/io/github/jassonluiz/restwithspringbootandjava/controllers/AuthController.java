@@ -1,5 +1,7 @@
 package io.github.jassonluiz.restwithspringbootandjava.controllers;
 
+import java.util.logging.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/auth")
 @Tag(name = "Authentication Endpoint")
 public class AuthController {
+	
+	private Logger logger = Logger.getLogger(AuthController.class.getName());
 
 	@Autowired
 	AuthServices authServices;
@@ -28,10 +32,15 @@ public class AuthController {
 	@Operation(summary = "Authentication a user and retuns a token")
 	@PostMapping(value = "/signin")
 	public ResponseEntity signin(@RequestBody AccountCredentialsVO data) {
+		
+		logger.info("Entrando no método signin da controller...");
+		
 		if(checkIfParamsIsNotNull(data)) 
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid client request!");
 		var token = authServices.signin(data);
 		if(token == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid client request!");
+		
+		logger.info("Método signin da controller concluido.");
 		return token; 
 	}
 	
